@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>gltf test</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+    <link rel="stylesheet" href="lib/metro/metro-all.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
+    <script type="text/javascript" src="lib/maptalks/maptalksgl-dev.js"></script>
+    <script type="text/javascript" src="lib/maptalks/maptalks.gltf-dev.js"></script>
+    <script type="text/javascript" src="lib/dat/dat.gui.min.js"></script>
+    <script type="text/javascript" src="lib/ui.control-pbr.js"></script>
+    <script src="lib/metro/jquery-3.3.1.min.js"></script>
+    <script src="lib/metro/metro.min.js"></script>
+    <script src="model-index.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+        .listpanel {
+            width: 250px;
+            height: 100%;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            overflow-y:scroll;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="listpanel">
+        
+    </div>
+    <script>
+        const { createREGL, mat4, reshader } = maptalksgl;
+        var gui = new dat.GUI({ width: 250 });
+        var map = new maptalks.Map('map', {
+            center: [120, 30],
+            zoom: 14,
+            pitch : 45,
+            baseLayer: new maptalks.TileLayer('base', {
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                subdomains: ['a','b','c','d'],
+                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+            })
+        });
+        var center = map.getCenter();
+
+        var Config = function () {
+            this.shader = 'phong';
+            this.animation = false;
+            this.loop = false;
+            this.visible = true;
+            this.speed = 1.0;
+            this.x = 10.0;
+            this.y = 10.0;
+            this.z = 0.0;
+            this.axisX = 0.0;
+            this.axisY = 180.0;
+            this.axisZ = 0.0;
+            this.angle = 0.0;
+            this.scaleX = 2;
+            this.scaleY = 2;
+            this.scaleZ = 2;
+            this.ambientStrength = 0.5;
+            this.specularStrength = 1.0;
+            this.materialShininess = 32;//反光度，即影响镜面高光的散射/半径
+            this.opacity = 0.8;
+            this.lightAmbient = [240, 240, 240, 1.0];
+            this.lightDiffuse = [100, 100, 100, 1.0];
+            this.lightSpecular = [20, 150, 200, 1.0];
+        }
+        var options = new Config();
+        var gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);//添加一个gltf图层到地图上
+
+        gltflayer.setIBLSkyBox([
+            'resource/images/skybox_bridge/posx.jpg',
+            'resource/images/skybox_bridge/negx.jpg',
+            'resource/images/skybox_bridge/posy.jpg',
+            'resource/images/skybox_bridge/negy.jpg',
+            'resource/images/skybox_bridge/posz.jpg',
+            'resource/images/skybox_bridge/negz.jpg'
+        ]);
+
+        var gltfMarker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                // url: url24,
+                shader: options.shader,//phong着色器为内置着色器，只需要在options指定一下就可以使用
+                animation: options.animation,
+                loop: options.loop,
+                visible: options.visible,
+                speed: options.speed,
+                translation: [options.x, options.y, options.z],
+                rotation: [0, 0, 0, 1],
+                scale: [options.scaleX, options.scaleY, options.scaleZ],
+                uniforms: {
+                    materialShininess: options.materialShininess,//反光度，即影响镜面高光的散射/半径
+                    opacity: options.opacity,
+                    lightAmbient: getColor(options.lightAmbient),
+                    lightDiffuse: getColor(options.lightDiffuse),
+                    lightSpecular: getColor(options.lightSpecular),
+                    stroke : [1.0, 0.0, 0.0, 1.0]
+                }
+            }
+        });
+
+        function getColor(color) {
+            return [color[0] / 255, color[1] / 255, color[2] / 255, 1.0]
+        }
+        
+        function AddModelList() {
+            let ulHtml = ` <ul data-role="listview" data-view="icons-medium">`;
+                for (let i = 0;i < gltfModelList.length;i++) {
+                    const modelInfo = gltfModelList[i];
+                    let li = ``;
+                }
+        //     <ul data-role="listview" data-view="icons-medium">
+        //     <li data-caption="Simple models">
+        //         <ul>
+        //             <li data-icon="gltf/TriangleWithoutIndices/screenshot/screenshot.png" data-caption="TriangleWithoutIndices"></li>
+        //             <li data-icon="gltf/Triangle/screenshot/screenshot.png" data-caption="Triangle"></li>
+        //             <li data-icon="gltf/AnimatedTriangle/screenshot/screenshot.gif" data-caption="AnimatedTriangle"></li>
+        //             <li data-icon="gltf/AnimatedMorphCube/screenshot/screenshot.gif" data-caption="Downloads"></li>
+        //             <li data-icon="gltf/BoxInterleaved/screenshot/screenshot.png" data-caption="Desktop"></li>
+        //         </ul>
+        //     </li>
+        //     <li data-caption="Complex models">
+        //         <ul>
+        //             <li data-icon="gltf/AnimatedMorphSphere/screenshot/screenshot.gif" data-caption="System (C:)"></li>
+        //             <li data-icon="gltf/AntiqueCamera/screenshot/screenshot.png" data-caption="DS1 (D:)"></li>
+        //             <li data-icon="gltf/Avocado/screenshot/screenshot.jpg" data-caption="DS2 (E:)"></li>
+        //             <li data-icon="gltf/BarramundiFish/screenshot/screenshot.jpg" data-caption="FreeAgent (G:)"></li>
+        //             <li data-icon="gltf/BoomBox/screenshot/screenshot.jpg" data-caption="Network"></li>
+        //         </ul>
+        //     </li>
+        //     <li data-caption="PBR Models">
+        //         <ul>
+        //             <li data-icon="gltf/AnimatedMorphSphere/screenshot/screenshot.gif" data-caption="System (C:)"></li>
+        //             <li data-icon="gltf/AntiqueCamera/screenshot/screenshot.png" data-caption="DS1 (D:)"></li>
+        //             <li data-icon="gltf/Avocado/screenshot/screenshot.jpg" data-caption="DS2 (E:)"></li>
+        //             <li data-icon="gltf/BarramundiFish/screenshot/screenshot.jpg" data-caption="FreeAgent (G:)"></li>
+        //             <li data-icon="gltf/BoomBox/screenshot/screenshot.jpg" data-caption="Network"></li>
+        //         </ul>
+        //     </li>
+        // </ul>
+        }
+        gltfMarker.addTo(gltflayer);
+        gltfMarker.on('click', e => {
+            alert(e.pickingId);
+        });
+        gltfMarker.on('mousemove', e => {
+            map.setCursor('url(images/cursor.png) 9 0, auto');
+        });
+        gltfMarker.on('mouseleave', e => {
+            map.resetCursor();
+        });
+        // var gltfMarker1 = new maptalks.GLTFMarker(center, {
+        //     symbol: {
+        //         url: url7,
+        //         animation : true,
+        //         loop : true,
+        //         scale : [10, 10, 10]
+        //     }
+        // }).addTo(gltflayer);
+        // var gltfMarker2 = new maptalks.GLTFMarker(center.add(0.01, 0), {
+        //     symbol: {
+        //         url: url14,
+        //         animation : true,
+        //         loop : true,
+        //         scale : [4, 4, 4]
+        //     }
+        // }).addTo(gltflayer);
+        // AddGuiControl(gui, options, [gltfMarker]);
+    </script>
+</body>
+</html>
